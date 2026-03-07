@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -8,32 +8,18 @@ import egridData from '../../data/egrid_regions.json';
 import waterData from '../../data/water_stress.json';
 import dcData from '../../data/datacenters.json';
 
-// Merge water stress data onto data center entries
 function enrichDataCenters() {
-  const waterMap = {};
-  waterData.regions.forEach(w => {
-    waterMap[`${w.lat.toFixed(2)}_${w.lng.toFixed(2)}`] = w;
-  });
-
   const egridMap = {};
-  egridData.regions.forEach(r => {
-    egridMap[r.id] = r;
-  });
+  egridData.regions.forEach(r => { egridMap[r.id] = r; });
 
   return dcData.datacenters.map(dc => {
-    // Find closest water stress data point
     let closestWater = null;
     let minDist = Infinity;
     waterData.regions.forEach(w => {
       const dist = Math.sqrt(Math.pow(dc.lat - w.lat, 2) + Math.pow(dc.lng - w.lng, 2));
-      if (dist < minDist) {
-        minDist = dist;
-        closestWater = w;
-      }
+      if (dist < minDist) { minDist = dist; closestWater = w; }
     });
-
     const egrid = egridMap[dc.egrid_region] || {};
-
     return {
       ...dc,
       co2_rate: egrid.co2_rate || 800,
@@ -60,7 +46,6 @@ function getColor(value, min, max, spectrum) {
     if (t < 0.8) return '#fb923c';
     return '#dc2626';
   }
-  // composite
   if (t < 0.2) return '#2dd4a0';
   if (t < 0.4) return '#86efac';
   if (t < 0.6) return '#fbbf24';
@@ -77,12 +62,10 @@ function getCompositeScore(co2_rate, stress_score) {
 export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const markersRef = useRef([]);
   const [loaded, setLoaded] = useState(false);
-
   const enrichedDCs = useRef(enrichDataCenters());
+  const clickHandlerRef = useRef(null);
 
-  // Initialize map
   useEffect(() => {
     if (map.current) return;
 
@@ -99,11 +82,107 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
       attributionControl: true,
     });
 
-    map.current.addControl(new mapboxgl.NavigationControl({
-      showCompass: false,
-    }), 'bottom-right');
+    map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
 
     map.current.on('load', () => {
+      const dcs = enrichedDCs.current;
+
+      const features = dcs.map(dc => ({
+        type: 'Feature',
+        properties: {
+          id: dc.id,
+          name: dc.name,
+          metro: dc.metro || dc.name,
+          operator: dc.operator,
+          capacity_mw: dc.capacity_mw,
+          co2_rate: dc.co2_rate,
+          stress_score: dc.stress_score,
+          stress_label: dc.stress_label,
+          withdrawal_ratio: dc.withdrawal_ratio,
+          egrid_region: dc.egrid_region,
+          notes: dc.notes,
+          color: '#2dd4a0',
+          label: '',
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [dc.lng, dc.lat],
+        },
+      }));
+
+      map.current.addSource('datacenters', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features },
+      });
+
+      map.current.addLayer({
+        id: 'dc-glow',
+        type: 'circle',
+        source: 'datacenters',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 18, 5, 26, 7, 36],
+          'circle-color': ['get', 'color'],
+          'circle-opacity': 0.12,
+          'circle-blur': 0.8,
+        },
+      });
+
+      map.current.addLayer({
+        id: 'dc-circles',
+        type: 'circle',
+        source: 'datacenters',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 7, 5, 11, 7, 16],
+          'circle-color': ['get', 'color'],
+          'circle-opacity': 0.9,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': ['get', 'color'],
+          'circle-stroke-opacity': 0.5,
+        },
+      });
+
+      map.current.addLayer({
+        id: 'dc-value-labels',
+        type: 'symbol',
+        source: 'datacenters',
+        layout: {
+          'text-field': ['get', 'label'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 3, 8, 5, 10, 7, 12],
+          'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      });
+
+      map.current.addLayer({
+        id: 'dc-labels',
+        type: 'symbol',
+        source: 'datacenters',
+        layout: {
+          'text-field': ['get', 'metro'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 3, 8, 5, 10, 7, 12],
+          'text-offset': [0, 2.0],
+          'text-anchor': 'top',
+          'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+          'text-allow-overlap': false,
+        },
+        paint: {
+          'text-color': 'rgba(255,255,255,0.55)',
+          'text-halo-color': 'rgba(0,0,0,0.8)',
+          'text-halo-width': 1,
+        },
+      });
+
+      map.current.on('mouseenter', 'dc-circles', () => {
+        map.current.getCanvas().style.cursor = 'pointer';
+      });
+      map.current.on('mouseleave', 'dc-circles', () => {
+        map.current.getCanvas().style.cursor = '';
+      });
+
       setLoaded(true);
     });
 
@@ -115,164 +194,74 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
     };
   }, []);
 
-  // Update markers when layer/price/PUE changes
-  const updateMarkers = useCallback(() => {
+  useEffect(() => {
     if (!map.current || !loaded) return;
 
-    // Remove existing markers
-    markersRef.current.forEach(m => m.remove());
-    markersRef.current = [];
+    const dcs = enrichedDCs.current;
+    const source = map.current.getSource('datacenters');
+    if (!source) return;
 
-    enrichedDCs.current.forEach(dc => {
-      const carbonCostPerMWh = (dc.co2_rate / 2000) * carbonPrice * pue;
-
-      let markerColor, markerValue, markerSize;
+    const features = dcs.map(dc => {
+      let color, label;
 
       if (activeLayer === 'carbon') {
-        markerColor = getColor(dc.co2_rate, 200, 1600, 'carbon');
-        markerValue = `${dc.co2_rate.toFixed(0)}`;
-        markerSize = 20 + (dc.co2_rate / 1600) * 30;
+        color = getColor(dc.co2_rate, 200, 1600, 'carbon');
+        label = `${dc.co2_rate.toFixed(0)}`;
       } else if (activeLayer === 'water') {
-        markerColor = getColor(dc.stress_score, 0, 5, 'water');
-        markerValue = `${dc.stress_score.toFixed(1)}`;
-        markerSize = 20 + (dc.stress_score / 5) * 30;
+        color = getColor(dc.stress_score, 0, 5, 'water');
+        label = `${dc.stress_score.toFixed(1)}`;
       } else {
         const composite = getCompositeScore(dc.co2_rate, dc.stress_score);
-        markerColor = getColor(composite, 0, 1, 'composite');
-        markerValue = `${Math.round(composite * 100)}`;
-        markerSize = 20 + composite * 30;
+        color = getColor(composite, 0, 1, 'composite');
+        label = `${Math.round(composite * 100)}`;
       }
 
-      // Create custom marker element
-      const el = document.createElement('div');
-      el.style.cssText = `
-        width: ${markerSize}px;
-        height: ${markerSize}px;
-        border-radius: 50%;
-        background: ${markerColor}22;
-        border: 2px solid ${markerColor};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 0 12px ${markerColor}40;
-        position: relative;
-      `;
-
-      const inner = document.createElement('div');
-      inner.style.cssText = `
-        width: ${markerSize * 0.65}px;
-        height: ${markerSize * 0.65}px;
-        border-radius: 50%;
-        background: ${markerColor}44;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: ${Math.max(9, markerSize * 0.22)}px;
-        font-weight: 700;
-        color: white;
-      `;
-      inner.textContent = markerValue;
-      el.appendChild(inner);
-
-      // Hover effect
-      el.addEventListener('mouseenter', () => {
-        el.style.transform = 'scale(1.2)';
-        el.style.zIndex = '100';
-        el.style.boxShadow = `0 0 24px ${markerColor}80`;
-      });
-      el.addEventListener('mouseleave', () => {
-        el.style.transform = 'scale(1)';
-        el.style.zIndex = '1';
-        el.style.boxShadow = `0 0 12px ${markerColor}40`;
-      });
-
-      // Click handler
-      el.addEventListener('click', () => {
-        onSelectDC({
-          ...dc,
-          carbonCostPerMWh,
-        });
-      });
-
-      // Add label below marker
-      const label = document.createElement('div');
-      label.style.cssText = `
-        position: absolute;
-        bottom: -18px;
-        left: 50%;
-        transform: translateX(-50%);
-        white-space: nowrap;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 9px;
-        color: rgba(255,255,255,0.6);
-        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-        pointer-events: none;
-      `;
-      label.textContent = dc.metro || dc.name;
-      el.appendChild(label);
-
-      const marker = new mapboxgl.Marker({
-        element: el,
-        anchor: 'center',
-      })
-        .setLngLat([dc.lng, dc.lat])
-        .addTo(map.current);
-
-      markersRef.current.push(marker);
-    });
-  }, [carbonPrice, activeLayer, pue, loaded, onSelectDC]);
-
-  useEffect(() => {
-    updateMarkers();
-  }, [updateMarkers]);
-
-  // Add eGRID region circles as a background layer
-  useEffect(() => {
-    if (!map.current || !loaded) return;
-
-    // Add eGRID regions as a source if not already
-    if (!map.current.getSource('egrid-regions')) {
-      const features = egridData.regions.filter(r => r.bbox).map(r => ({
+      return {
         type: 'Feature',
         properties: {
-          id: r.id,
-          name: r.name,
-          co2_rate: r.co2_rate,
+          id: dc.id,
+          name: dc.name,
+          metro: dc.metro || dc.name,
+          operator: dc.operator,
+          capacity_mw: dc.capacity_mw,
+          co2_rate: dc.co2_rate,
+          stress_score: dc.stress_score,
+          stress_label: dc.stress_label,
+          withdrawal_ratio: dc.withdrawal_ratio,
+          egrid_region: dc.egrid_region,
+          notes: dc.notes,
+          color,
+          label,
         },
         geometry: {
           type: 'Point',
-          coordinates: [r.lng, r.lat],
+          coordinates: [dc.lng, dc.lat],
         },
-      }));
+      };
+    });
 
-      map.current.addSource('egrid-regions', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features },
-      });
+    source.setData({ type: 'FeatureCollection', features });
 
-      map.current.addLayer({
-        id: 'egrid-heatmap',
-        type: 'circle',
-        source: 'egrid-regions',
-        paint: {
-          'circle-radius': 80,
-          'circle-color': [
-            'interpolate', ['linear'], ['get', 'co2_rate'],
-            200, '#2dd4a022',
-            600, '#86efac22',
-            900, '#fbbf2422',
-            1200, '#f9731622',
-            1600, '#ef444422',
-          ],
-          'circle-blur': 1,
-          'circle-opacity': 0.6,
-        },
-      });
+    if (clickHandlerRef.current) {
+      map.current.off('click', 'dc-circles', clickHandlerRef.current);
     }
-  }, [loaded]);
+
+    const handler = (e) => {
+      if (!e.features || !e.features.length) return;
+      const props = e.features[0].properties;
+      const coords = e.features[0].geometry.coordinates.slice();
+      onSelectDC({
+        ...props,
+        lat: coords[1],
+        lng: coords[0],
+        carbonCostPerMWh: (props.co2_rate / 2000) * carbonPrice * pue,
+      });
+    };
+
+    clickHandlerRef.current = handler;
+    map.current.on('click', 'dc-circles', handler);
+
+  }, [activeLayer, carbonPrice, pue, loaded, onSelectDC]);
 
   return (
     <div

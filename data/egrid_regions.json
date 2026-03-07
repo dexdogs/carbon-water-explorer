@@ -1,0 +1,230 @@
+{
+  "source": "EPA eGRID 2022 (eGRID2022 Summary Tables)",
+  "url": "https://www.epa.gov/egrid/download-data",
+  "unit": "lb CO2/MWh",
+  "regions": [
+    {
+      "id": "AKGD",
+      "name": "ASCC Alaska Grid",
+      "co2_rate": 1134.8,
+      "lat": 61.2,
+      "lng": -149.9,
+      "states": ["AK"]
+    },
+    {
+      "id": "AKMS",
+      "name": "ASCC Miscellaneous",
+      "co2_rate": 498.5,
+      "lat": 64.8,
+      "lng": -153.0,
+      "states": ["AK"]
+    },
+    {
+      "id": "AZNM",
+      "name": "WECC Southwest",
+      "co2_rate": 861.2,
+      "lat": 33.5,
+      "lng": -112.0,
+      "states": ["AZ", "NM"],
+      "bbox": [[-115.0, 31.3], [-103.0, 37.0]]
+    },
+    {
+      "id": "CAMX",
+      "name": "WECC California",
+      "co2_rate": 522.4,
+      "lat": 36.8,
+      "lng": -119.4,
+      "states": ["CA"],
+      "bbox": [[-124.5, 32.5], [-114.1, 42.0]]
+    },
+    {
+      "id": "ERCT",
+      "name": "ERCOT All",
+      "co2_rate": 852.3,
+      "lat": 31.5,
+      "lng": -97.5,
+      "states": ["TX"],
+      "bbox": [[-106.6, 25.8], [-93.5, 36.5]]
+    },
+    {
+      "id": "FRCC",
+      "name": "FRCC All",
+      "co2_rate": 897.1,
+      "lat": 28.5,
+      "lng": -82.0,
+      "states": ["FL"],
+      "bbox": [[-87.6, 24.5], [-79.8, 31.0]]
+    },
+    {
+      "id": "MROE",
+      "name": "MRO East",
+      "co2_rate": 1232.5,
+      "lat": 44.0,
+      "lng": -89.5,
+      "states": ["WI"],
+      "bbox": [[-92.9, 42.5], [-86.8, 47.1]]
+    },
+    {
+      "id": "MROW",
+      "name": "MRO West",
+      "co2_rate": 1028.7,
+      "lat": 44.5,
+      "lng": -97.0,
+      "states": ["IA", "MN", "MO", "MT", "ND", "NE", "SD"],
+      "bbox": [[-116.0, 36.0], [-89.1, 49.0]]
+    },
+    {
+      "id": "NEWE",
+      "name": "NPCC New England",
+      "co2_rate": 522.0,
+      "lat": 42.5,
+      "lng": -71.5,
+      "states": ["CT", "MA", "ME", "NH", "RI", "VT"],
+      "bbox": [[-73.7, 41.0], [-66.9, 47.5]]
+    },
+    {
+      "id": "NWPP",
+      "name": "WECC Northwest",
+      "co2_rate": 658.5,
+      "lat": 46.0,
+      "lng": -118.0,
+      "states": ["ID", "MT", "NV", "OR", "UT", "WA", "WY"],
+      "bbox": [[-124.8, 37.0], [-104.0, 49.0]]
+    },
+    {
+      "id": "NYCW",
+      "name": "NPCC NYC/Westchester",
+      "co2_rate": 590.1,
+      "lat": 40.75,
+      "lng": -73.97,
+      "states": ["NY"],
+      "bbox": [[-74.3, 40.5], [-73.6, 41.4]]
+    },
+    {
+      "id": "NYLI",
+      "name": "NPCC Long Island",
+      "co2_rate": 1104.3,
+      "lat": 40.78,
+      "lng": -73.2,
+      "states": ["NY"],
+      "bbox": [[-73.8, 40.5], [-71.8, 41.2]]
+    },
+    {
+      "id": "NYUP",
+      "name": "NPCC Upstate NY",
+      "co2_rate": 261.4,
+      "lat": 43.0,
+      "lng": -76.0,
+      "states": ["NY"],
+      "bbox": [[-79.8, 41.0], [-73.2, 45.0]]
+    },
+    {
+      "id": "PRMS",
+      "name": "WECC Rockies",
+      "co2_rate": 1233.9,
+      "lat": 39.5,
+      "lng": -105.5,
+      "states": ["CO", "WY"],
+      "bbox": [[-109.1, 37.0], [-102.0, 45.0]]
+    },
+    {
+      "id": "RFCE",
+      "name": "RFC East",
+      "co2_rate": 715.8,
+      "lat": 40.0,
+      "lng": -76.5,
+      "states": ["DC", "DE", "MD", "NJ", "PA"],
+      "bbox": [[-80.5, 38.0], [-73.9, 42.5]]
+    },
+    {
+      "id": "RFCM",
+      "name": "RFC Michigan",
+      "co2_rate": 1189.6,
+      "lat": 43.5,
+      "lng": -84.5,
+      "states": ["MI"],
+      "bbox": [[-90.4, 41.7], [-82.4, 48.3]]
+    },
+    {
+      "id": "RFCW",
+      "name": "RFC West",
+      "co2_rate": 1186.1,
+      "lat": 40.0,
+      "lng": -83.0,
+      "states": ["IN", "KY", "OH", "WV"],
+      "bbox": [[-88.1, 37.8], [-80.5, 42.3]]
+    },
+    {
+      "id": "RMPA",
+      "name": "WECC S. Rockies",
+      "co2_rate": 1124.8,
+      "lat": 38.0,
+      "lng": -106.0,
+      "states": ["CO", "NM", "WY"],
+      "bbox": [[-109.1, 31.3], [-102.0, 41.0]]
+    },
+    {
+      "id": "SPNO",
+      "name": "SPP North",
+      "co2_rate": 1176.2,
+      "lat": 37.5,
+      "lng": -97.5,
+      "states": ["KS", "NE", "OK"],
+      "bbox": [[-104.1, 34.0], [-94.4, 43.0]]
+    },
+    {
+      "id": "SPSO",
+      "name": "SPP South",
+      "co2_rate": 1095.2,
+      "lat": 33.0,
+      "lng": -94.0,
+      "states": ["AR", "LA", "OK", "TX"],
+      "bbox": [[-100.0, 28.9], [-89.6, 36.5]]
+    },
+    {
+      "id": "SRMV",
+      "name": "SERC Mississippi Valley",
+      "co2_rate": 829.4,
+      "lat": 32.5,
+      "lng": -90.0,
+      "states": ["AR", "LA", "MS", "MO"],
+      "bbox": [[-94.6, 29.0], [-88.1, 36.5]]
+    },
+    {
+      "id": "SRMW",
+      "name": "SERC Midwest",
+      "co2_rate": 1564.8,
+      "lat": 37.5,
+      "lng": -89.5,
+      "states": ["IL", "MO"],
+      "bbox": [[-91.5, 36.0], [-87.5, 42.5]]
+    },
+    {
+      "id": "SRSO",
+      "name": "SERC South",
+      "co2_rate": 922.0,
+      "lat": 33.0,
+      "lng": -86.5,
+      "states": ["AL", "GA", "MS"],
+      "bbox": [[-88.5, 30.2], [-80.8, 35.0]]
+    },
+    {
+      "id": "SRTV",
+      "name": "SERC Tennessee Valley",
+      "co2_rate": 938.0,
+      "lat": 35.5,
+      "lng": -86.0,
+      "states": ["KY", "TN", "VA"],
+      "bbox": [[-90.3, 34.9], [-81.6, 38.6]]
+    },
+    {
+      "id": "SRVC",
+      "name": "SERC Virginia/Carolina",
+      "co2_rate": 685.7,
+      "lat": 35.5,
+      "lng": -79.5,
+      "states": ["NC", "SC", "VA"],
+      "bbox": [[-84.3, 32.0], [-75.5, 39.5]]
+    }
+  ]
+}

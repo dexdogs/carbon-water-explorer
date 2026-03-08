@@ -66,6 +66,7 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
   const enrichedDCs = useRef(enrichDataCenters());
   const clickHandlerRef = useRef(null);
 
+  // Initialize map once
   useEffect(() => {
     if (map.current) return;
 
@@ -87,6 +88,7 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
     map.current.on('load', () => {
       const dcs = enrichedDCs.current;
 
+      // Build GeoJSON features for all data centers
       const features = dcs.map(dc => ({
         type: 'Feature',
         properties: {
@@ -115,39 +117,43 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
         data: { type: 'FeatureCollection', features },
       });
 
+      // Outer glow
       map.current.addLayer({
         id: 'dc-glow',
         type: 'circle',
         source: 'datacenters',
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 18, 5, 26, 7, 36],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 10, 5, 16, 7, 26, 9, 36],
           'circle-color': ['get', 'color'],
-          'circle-opacity': 0.12,
+          'circle-opacity': 0.10,
           'circle-blur': 0.8,
         },
       });
 
+      // Main marker circle
       map.current.addLayer({
         id: 'dc-circles',
         type: 'circle',
         source: 'datacenters',
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 7, 5, 11, 7, 16],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 4, 5, 7, 7, 12, 9, 16],
           'circle-color': ['get', 'color'],
           'circle-opacity': 0.9,
-          'circle-stroke-width': 2,
+          'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 3, 1, 6, 2],
           'circle-stroke-color': ['get', 'color'],
           'circle-stroke-opacity': 0.5,
         },
       });
 
+      // Value labels on top of circles — only show when zoomed in enough
       map.current.addLayer({
         id: 'dc-value-labels',
         type: 'symbol',
         source: 'datacenters',
+        minzoom: 5.5,
         layout: {
           'text-field': ['get', 'label'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 3, 8, 5, 10, 7, 12],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 5.5, 8, 7, 10, 9, 13],
           'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
           'text-allow-overlap': true,
           'text-ignore-placement': true,
@@ -157,17 +163,20 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
         },
       });
 
+      // Metro name labels below — show at moderate zoom, auto-hide overlaps
       map.current.addLayer({
         id: 'dc-labels',
         type: 'symbol',
         source: 'datacenters',
+        minzoom: 5,
         layout: {
           'text-field': ['get', 'metro'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 3, 8, 5, 10, 7, 12],
-          'text-offset': [0, 2.0],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 5, 9, 7, 11, 9, 13],
+          'text-offset': [0, 1.8],
           'text-anchor': 'top',
           'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
           'text-allow-overlap': false,
+          'text-optional': true,
         },
         paint: {
           'text-color': 'rgba(255,255,255,0.55)',
@@ -176,6 +185,7 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
         },
       });
 
+      // Cursor on hover
       map.current.on('mouseenter', 'dc-circles', () => {
         map.current.getCanvas().style.cursor = 'pointer';
       });
@@ -194,6 +204,7 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
     };
   }, []);
 
+  // Update colors, labels, and click handler when controls change
   useEffect(() => {
     if (!map.current || !loaded) return;
 
@@ -201,6 +212,7 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
     const source = map.current.getSource('datacenters');
     if (!source) return;
 
+    // Rebuild features with updated colors and labels
     const features = dcs.map(dc => {
       let color, label;
 
@@ -242,6 +254,7 @@ export default function MapView({ carbonPrice, activeLayer, pue, onSelectDC }) {
 
     source.setData({ type: 'FeatureCollection', features });
 
+    // Update click handler with current carbonPrice/pue
     if (clickHandlerRef.current) {
       map.current.off('click', 'dc-circles', clickHandlerRef.current);
     }

@@ -6,7 +6,7 @@ const layerOptions = [
   { id: 'water', label: 'Water Stress', icon: '◉' },
 ];
 
-export default function Controls({ carbonPrice, setCarbonPrice, activeLayer, setActiveLayer, pue, setPue }) {
+export default function Controls({ carbonPrice, setCarbonPrice, activeLayer, setActiveLayer, pue, setPue, compareMode, onToggleCompare }) {
   return (
     <div style={{
       position: 'absolute',
@@ -167,6 +167,33 @@ export default function Controls({ carbonPrice, setCarbonPrice, activeLayer, set
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text-muted)' }}>2.50</span>
           </div>
         </div>
+
+        {/* Compare Mode Toggle */}
+        <button
+          onClick={onToggleCompare}
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            borderRadius: 8,
+            border: '1px solid',
+            borderColor: compareMode ? 'var(--accent-cyan)' : 'var(--border-subtle)',
+            background: compareMode ? 'rgba(34, 211, 238, 0.08)' : 'transparent',
+            color: compareMode ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            marginBottom: 12,
+          }}
+        >
+          <span style={{ fontSize: 14 }}>⇋</span>
+          {compareMode ? 'Exit Compare' : 'Compare A / B'}
+        </button>
 
         {/* Context note */}
         <div style={{

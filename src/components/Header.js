@@ -1,6 +1,6 @@
 'use client';
 
-export default function Header() {
+export default function Header({ showInfo, setShowInfo, showMethodology, setShowMethodology }) {
   return (
     <div style={{
       position: 'absolute',
@@ -54,6 +54,52 @@ export default function Header() {
           }}>
             SASB TC-SI-130a · EPA eGRID · WRI Aqueduct
           </p>
+        </div>
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 6, marginLeft: 8 }}>
+          <button
+            onClick={() => { setShowMethodology(prev => !prev); setShowInfo(false); }}
+            title="Methodology & Equations"
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 6,
+              border: '1px solid var(--border-subtle)',
+              background: showMethodology ? 'rgba(45, 212, 160, 0.12)' : 'transparent',
+              color: showMethodology ? 'var(--accent-emerald)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 14,
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            fx
+          </button>
+          <button
+            onClick={() => { setShowInfo(prev => !prev); setShowMethodology(false); }}
+            title="Info & Feedback"
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 6,
+              border: '1px solid var(--border-subtle)',
+              background: showInfo ? 'rgba(34, 211, 238, 0.12)' : 'transparent',
+              color: showInfo ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 15,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            i
+          </button>
         </div>
       </div>
     </div>
